@@ -9,11 +9,7 @@
       "stopAtEntry": false,
       "externalConsole": true,
       "cwd": "e:/102openGL",
-<<<<<<< HEAD
       "program": "e:/102openGL/bin/main.exe",
-=======
-      "program": "e:/102openGL/build/Debug/outDebug",
->>>>>>> 09982c29525bf4b26eb251aa158844e552af0217
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

@@ -38,7 +38,7 @@ int main(void)
 
     glfwTerminate();
 
-
+    //12323123212
     count temp;
     std::cout<<temp.getCount()<<std::endl;
     std::cout<<temp.getCount()<<std::endl;

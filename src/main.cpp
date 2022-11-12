@@ -1,4 +1,10 @@
-#include "GL_Head.h"
+#include "GL_Header.h"
+
+void init(GLFWwindow* window)
+{
+
+    
+}
 
 int main(void)
 {
@@ -38,10 +44,6 @@ int main(void)
 
     glfwTerminate();
 
-    //12323123212
-    count temp;
-    std::cout<<temp.getCount()<<std::endl;
-    std::cout<<temp.getCount()<<std::endl;
 
     return 0;
 }

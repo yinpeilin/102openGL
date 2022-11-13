@@ -1,3 +1,4 @@
+#pragma once
 #include "GL_Header.h"
 
 GLuint renderingProgram;

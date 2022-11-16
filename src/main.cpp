@@ -1,35 +1,64 @@
-#pragma once
-#include "GL_Header.h"
 
+#include "GL_Header.h"
+#include "Utils.h"
 GLuint renderingProgram;
 GLuint vao[numVAOs];
 
 GLuint createShaderProgram()
 {
-    const char* vshaderSource = 
-    "#version 430 \n"
-    "void main(void) \n"
-    "{ gl_Position = vec4(0.0, 0.0, 0.0, 1.0); }";
-    const char* fshaderSource = 
-    "#version 430 \n"
-    "out vec4 color;\n" 
-    "void main(void)\n"  
-    "{ if(gl_FragCoord.x<200) {color = vec4(1.0, 0.0, 0.0, 1.0);}\n"
-    "  else {color = vec4(0.0, 0.0, 1.0, 1.0);}}";
-    cout<<fshaderSource<<endl;
+    string vertShaderStr = readShaderSource("vertShader.glsl");
+    string fragShaderStr = readShaderSource("fragShader.glsl");
+    const char* vshaderSource = vertShaderStr.c_str();
+    const char* fshaderSource = fragShaderStr.c_str();
+    cout << vshaderSource<<endl;
+
+    // cout<<fshaderSource<<endl;
+
+    GLint vertCompiled;
+    GLint fragCompiled;
+    GLint linked;
+
     GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
     GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
-
+    // cout<<"vShader: " <<vShader<<endl;
+    // cout<<"fShader: "<< fShader<<endl;
     glShaderSource(vShader, 1, &vshaderSource, NULL);
-    glShaderSource(fShader, 1, &fshaderSource, NULL);
     glCompileShader(vShader);
+    
+    //捕获编译着色器错误
+    checkOpenGLError();
+    glGetShaderiv(vShader, GL_COMPILE_STATUS, &vertCompiled);
+    if(vertCompiled !=1)
+    {
+        cout << "vertex compilation failed" << endl;
+        printShaderLog(vShader);
+    }
+
+    
+    glShaderSource(fShader, 1, &fshaderSource, NULL);
     glCompileShader(fShader);
+    checkOpenGLError();
+    glGetShaderiv(fShader, GL_COMPILE_STATUS, &fragCompiled);
+    if(fragCompiled !=1)
+    {
+        cout << "fragment compilation failed" << endl;
+        printShaderLog(fShader);
+    }
+
 
     GLuint vfProgram = glCreateProgram();
     glAttachShader(vfProgram, vShader);
     glAttachShader(vfProgram, fShader);
     glLinkProgram(vfProgram);
-    cout<<vfProgram<<endl;
+    checkOpenGLError();
+    glGetProgramiv(vfProgram, GL_LINK_STATUS, &linked);
+    if(linked !=1)
+    {
+        cout<<"linking failed"<<endl;
+        printProgramLog(vfProgram);
+    }
+
+    // cout<<vfProgram<<endl;
     return vfProgram;
 
 }
@@ -45,13 +74,18 @@ void display(GLFWwindow* window, GLdouble currentTime)
 {
     // glClearColor(1.0, 1.0, 0.0, 1.0);
     // glClear(GL_COLOR_BUFFER_BIT);
-
+    static float x = 0.0f;
+    static float inc = 0.01f;
     // glPointSize(30.0f);
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glClear();
+
     glUseProgram(renderingProgram);
     glPointSize(50.0f);
 
     // glPolygonMode(GL_FRONT_AND_BACK,GL_LINE); GL_FILL
-    glDrawArrays(GL_POINTS, 0, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
 }
 int main(void)

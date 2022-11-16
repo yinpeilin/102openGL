@@ -1,0 +1,35 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe 生成活动文件",
+            "command": "D:\\Program Files (x86)\\GCC\\bin\\g++.exe",
+            "args": [
+                "-D GLEW_STATIC", //因为我们链接的是静态库，使用该宏告知glew
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}\\src\\*.cpp",
+                "${workspaceFolder}/depends/libglfw3.a",
+                "${workspaceFolder}/depends/glew32s.lib", //链接至glew静态库
+                "-lopengl32", //链接系统中的opengl32库
+                "-lgdi32", //链接系统中的gdi32库
+                "-o",
+                "${workspaceFolder}\\bin\\${fileBasenameNoExtension}.exe",
+                "--include-directory=${workspaceFolder}/depends/include", //确保头文件的包含
+                "--include-directory=${workspaceFolder}/include"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "调试器生成的任务。"
+        }
+    ],
+    "version": "2.0.0"
+}

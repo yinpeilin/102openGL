@@ -10,8 +10,8 @@ GLuint createShaderProgram()
     string fragShaderStr = readShaderSource("..\\shader\\fragShader.glsl");
     const char* vshaderSource = vertShaderStr.c_str();
     const char* fshaderSource = fragShaderStr.c_str();
-    cout << vshaderSource<<endl;
-
+    
+    // cout << vshaderSource<<endl;
     // cout<<fshaderSource<<endl;
 
     GLint vertCompiled;
@@ -79,11 +79,15 @@ void display(GLFWwindow* window, GLdouble currentTime)
     // glPointSize(30.0f);
 
     glClear(GL_DEPTH_BUFFER_BIT);
-    glClear();
+    glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(renderingProgram);
-    glPointSize(50.0f);
-
+    // glPointSize(50.0f);
+    x += inc;
+    if(x > 1.0f){ inc = -0.01f;}
+    if(x < -1.0f){ inc = 0.01f;}
+    GLuint offsetLoc = glGetUniformLocation(renderingProgram, "offset");
+    glProgramUniform1f(renderingProgram, offsetLoc, x);
     // glPolygonMode(GL_FRONT_AND_BACK,GL_LINE); GL_FILL
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -98,7 +102,7 @@ int main(void)
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(400, 400, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(600, 600, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();

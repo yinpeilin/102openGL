@@ -6,8 +6,8 @@ GLuint vao[numVAOs];
 
 GLuint createShaderProgram()
 {
-    string vertShaderStr = readShaderSource("vertShader.glsl");
-    string fragShaderStr = readShaderSource("fragShader.glsl");
+    string vertShaderStr = readShaderSource("..\\shader\\vertShader.glsl");
+    string fragShaderStr = readShaderSource("..\\shader\\fragShader.glsl");
     const char* vshaderSource = vertShaderStr.c_str();
     const char* fshaderSource = fragShaderStr.c_str();
     cout << vshaderSource<<endl;

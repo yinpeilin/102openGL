@@ -7,7 +7,7 @@
                 "${workspaceFolder}/depends/include",
                 "${workspaceFolder}/include"
             ],
-            "compilerPath": "D:\\LLVM\\bin\\gcc.exe",
+            "compilerPath": "D:\\Program Files (x86)\\GCC\\bin\\gcc.exe",
             "cStandard": "${default}",
             "cppStandard": "${default}",
             "intelliSenseMode": "windows-gcc-x64",

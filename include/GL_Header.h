@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #pragma once
+=======
+
+>>>>>>> parent of ee7313e (123)
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>  
 

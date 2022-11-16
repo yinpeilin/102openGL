@@ -14,7 +14,7 @@
                 "-lopengl32", //链接系统中的opengl32库
                 "-lgdi32", //链接系统中的gdi32库
                 "-o",
-                "${workspaceFolder}\\bin\\${fileBasenameNoExtension}.exe",
+                "${workspaceFolder}\\bin\\main.exe",
                 "--include-directory=${workspaceFolder}/depends/include", //确保头文件的包含
                 "--include-directory=${workspaceFolder}/include"
             ],

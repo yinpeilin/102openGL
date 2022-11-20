@@ -1,13 +1,12 @@
 #version 430
-out vec4 color; 
+in vec2 tc;      // 输入插值过的材质坐标
+in vec4 varyingColor;
+uniform mat4 mv_matrix; 
+uniform mat4 proj_matrix;
+layout (binding=0) uniform sampler2D samp;
+out vec4 color;
+
 void main(void)  
 { 
-    if(gl_FragCoord.x<200) 
-    {
-        color = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-    else 
-    {
-        color = vec4(0.0, 0.0, 1.0, 1.0);
-    }
+    color = texture(samp, tc);
 }

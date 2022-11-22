@@ -7,11 +7,13 @@
 #include <iostream>
 #include <cmath>
 #include <string>
-#include <Plane.h>
+#include "Utils.h"
+#include "Camera.h"
+#include "Plane.h"
 using namespace std;
 
 
-#define numVAOs 1
+#define numVAOs 2
 #define numVBOs 4
 #define MIN_LENGTH 0.1f
 // settings

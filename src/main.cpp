@@ -1,7 +1,4 @@
 #include "GL_Header.h"
-#include "Utils.h"
-#include "Camera.h"
-
 float cubeLocX, cubeLocY, cubeLocZ;
 
 void window_reshape_callback(GLFWwindow* window, int newWidth, int newHeight);
@@ -60,17 +57,24 @@ void setupVertices(void) {
     glGenBuffers(numVBOs, vbo);
     // glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
     // glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-
     // glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
     // glBufferData(GL_ARRAY_BUFFER, sizeof(pyrTexCoords), pyrTexCoords, GL_STATIC_DRAW);
 
     
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, testPlane.cpoints_len, testPlane.cpoints, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, testPlane.cpoints.size()*3*4, &(testPlane.cpoints[0]), GL_STATIC_DRAW);
     
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,testPlane.cindices.size()*4, &(testPlane.cindices[0]), GL_STATIC_DRAW);
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
     // glBufferData(GL_ELEMENT_ARRAY_BUFFER, testPlane.cindices_len, testPlane.cindices, GL_STATIC_DRAW);
     
+
+    glBindVertexArray(vao[1]); 
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pyrTexCoords), pyrTexCoords, GL_STATIC_DRAW);
 
 }
 
@@ -89,10 +93,9 @@ void init(GLFWwindow* window)
     glfwGetFramebufferSize(window, &width, &height); 
     aspect = (float)width / (float)height;
     pMat = glm::perspective(glm::radians(camera.Fov), aspect, 0.1f, 10000.0f);  
-    testPlane.show_all();   
     // 1.0472 radians = 60 degrees
 
-    // myTexture = loadTexture("../resource/image.jpg");
+    myTexture = loadTexture("../resource/image.jpg");
     
 }
 void display(GLFWwindow* window, GLdouble currentTime)
@@ -105,13 +108,13 @@ void display(GLFWwindow* window, GLdouble currentTime)
 
     glClear(GL_DEPTH_BUFFER_BIT);
     glClear(GL_COLOR_BUFFER_BIT);
-
-    // glUseProgram(renderingProgram);
+    glBindVertexArray(vao[1]); 
+    glUseProgram(renderingProgram);
 
     // // 获取MV矩阵和投影矩阵的统一变量
-    // mLoc = glGetUniformLocation(renderingProgram, "m_matrix"); 
-    // vLoc = glGetUniformLocation(renderingProgram, "v_matrix"); 
-    // projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
+    mLoc = glGetUniformLocation(renderingProgram, "m_matrix"); 
+    vLoc = glGetUniformLocation(renderingProgram, "v_matrix"); 
+    projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
     // // 构建透视矩阵
     // // glfwGetFramebufferSize(window, &width, &height); 
     // // aspect = (float)width / (float)height;
@@ -126,41 +129,41 @@ void display(GLFWwindow* window, GLdouble currentTime)
     // // rMat = glm::rotate(rMat, 1.75f*(float)currentTime, glm::vec3(0.0f,0.0f, 1.0f));
 
     // //构建视图矩阵、模型矩阵和视图-模型矩阵
-    // vMat = camera.GetViewMatrix();
+    vMat = camera.GetViewMatrix();
     // // vMat = glm::translate(glm::mat4(1.0f), -camera.Position);
-    // mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubeLocX, cubeLocY, cubeLocZ));
+    mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubeLocX, cubeLocY, cubeLocZ));
     // // mMat = tMat * rMat;
     // // mvMat = vMat * mMat;
 
     // // 将透视矩阵和MV矩阵复制给相应的统一变量
-    // glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(vMat));
-    // glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(mMat));
-    // glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
+    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(vMat));
+    glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(mMat));
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
     // // 将VBO关联给顶点着色器中相应的顶点属性 
-    // glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); 
-    // glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); 
+    glEnableVertexAttribArray(0);
 
-    // glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); 
-    // glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); 
+    glEnableVertexAttribArray(1);
 
     
-    // // glActiveTexture(GL_TEXTURE0);
-    // // glBindTexture(GL_TEXTURE_2D, myTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, myTexture);
 
     // // 调整OpenGL设置，绘制模型 
-    // glEnable(GL_DEPTH_TEST); 
-    // glDepthFunc(GL_LEQUAL);
+    glEnable(GL_DEPTH_TEST); 
+    glDepthFunc(GL_LEQUAL);
     // // glDrawArrays(GL_TRIANGLES, 0, 36);
     // //背面剔除
     // // glFrontFace(GL_CW);             // 顶点的缠绕顺序为顺时针方向
     // // glFrontFace(GL_CCW);            // 顶点缠绕顺序为逆时针方向
     // //多实例化绘图
-    // glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 00000);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 10000);
     
 
-
+    glBindVertexArray(vao[0]); 
     glUseProgram(terrainRenderingProgram);
 
     // 获取MV矩阵和投影矩阵的统一变量
@@ -181,7 +184,7 @@ void display(GLFWwindow* window, GLdouble currentTime)
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
     // 将VBO关联给顶点着色器中相应的顶点属性 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0); 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0); 
     glEnableVertexAttribArray(0);
 
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
@@ -191,14 +194,15 @@ void display(GLFWwindow* window, GLdouble currentTime)
 
     // 调整OpenGL设置，绘制模型 
     glEnable(GL_DEPTH_TEST); 
+    glEnable(GL_MULTISAMPLE);
     glDepthFunc(GL_LEQUAL);
     // glDrawArrays(GL_TRIANGLES, 0, 36);
     //背面剔除
     // glFrontFace(GL_CW);             // 顶点的缠绕顺序为顺时针方向
     // glFrontFace(GL_CCW);            // 顶点缠绕顺序为逆时针方向
     //多实例化绘图
-    // glDrawElementsInstanced(GL_TRIANGLES, testPlane.cindices_len, GL_UNSIGNED_INT, nullptr, 1);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, testPlane.cpoints_len,1);
+    glDrawElementsInstanced(GL_LINE_STRIP, testPlane.cindices.size(), GL_UNSIGNED_INT, nullptr, 1);
+    // glDrawArraysInstanced(GL_TRIANGLES, 0, testPlane.cpoints_len,1);
     // glPointSize(50.0f);
     // x += inc;
     // if(x > 1.0f){ inc = -0.01f;}

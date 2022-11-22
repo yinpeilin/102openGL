@@ -3,7 +3,7 @@
 layout (location=0) in vec3 position;
 layout (location=1) in vec2 texCoord;
 out vec2 tc;        // 纹理坐标输出到光栅着色器用于插值
-// layout (binding=0) uniform sampler2D samp;
+layout (binding=0) uniform sampler2D samp;
 // uniform mat4 mv_matrix;
 uniform mat4 m_matrix;            // 这些是分开的模型和视图矩阵
 uniform mat4 v_matrix;

@@ -1,5 +1,6 @@
 #include"Utils.h"
-
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 void printShaderLog(GLuint shader)
 {
     int len = 0;
@@ -58,43 +59,43 @@ string readShaderSource(const char *filePath)
     return content;
 }
 
-// GLuint loadTexture(const char *textImagePath) 
-// { 
-//     GLuint textureID;
-//     glGenTextures(1, &textureID);
-//     glBindTexture(GL_TEXTURE_2D, textureID);
-//     // 为当前绑定的纹理对象设置环绕、过滤方式
-//     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);   
-//     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//     // glGenerateMipmap(GL_TEXTURE_2D);
-//     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//     // 如果还启用各向异性过滤
-//     if (!glewIsSupported("GL_EXT_texture_filter_anisotropic")) { 
-//         cout<<1<<endl;
-//         GLfloat anisoSetting = 0.0f;
-//         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisoSetting); 
-//         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-//         anisoSetting); 
-//     }
+GLuint loadTexture(const char *textImagePath) 
+{ 
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    // 为当前绑定的纹理对象设置环绕、过滤方式
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);   
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    // glGenerateMipmap(GL_TEXTURE_2D);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // 如果还启用各向异性过滤
+    if (!glewIsSupported("GL_EXT_texture_filter_anisotropic")) { 
+        cout<<1<<endl;
+        GLfloat anisoSetting = 0.0f;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisoSetting); 
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+        anisoSetting); 
+    }
 
-//     int width, height, nrChannels;
-//     unsigned char *data = stbi_load(textImagePath, &width, &height, &nrChannels, 0);
-//     cout<<data<<endl;
-//     if (data)
-//     {
-//         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-//         glGenerateMipmap(GL_TEXTURE_2D);
-//         cout<<2<<endl;
-//     }
-//     else
-//     {
-//         std::cout << "Failed to load texture" << std::endl;
-//     }
-//     stbi_image_free(data);
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load(textImagePath, &width, &height, &nrChannels, 0);
+    cout<<data<<endl;
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        cout<<2<<endl;
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
 
-//     return textureID;
-// }
+    return textureID;
+}
 
 GLuint createShaderProgram(const char *vertShaderPath, const char *fragShaderPath)
 {

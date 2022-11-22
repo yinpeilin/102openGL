@@ -13,6 +13,8 @@ using namespace std;
 #define numVAOs 1
 #define numVBOs 2
 
+
+#define MIN_LENGTH 0.1f
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 1200;

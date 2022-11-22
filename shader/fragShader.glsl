@@ -9,4 +9,5 @@ out vec4 color;
 void main(void)  
 { 
     color = texture(samp, tc);
+    // color = texture(samp, tc);
 }

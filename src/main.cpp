@@ -188,6 +188,8 @@ void display(GLFWwindow* window, GLdouble currentTime)
     glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); 
     glEnableVertexAttribArray(1);
+
+    
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, myTexture);
 
@@ -199,7 +201,7 @@ void display(GLFWwindow* window, GLdouble currentTime)
     // glFrontFace(GL_CW);             // 顶点的缠绕顺序为顺时针方向
     // glFrontFace(GL_CCW);            // 顶点缠绕顺序为逆时针方向
     //多实例化绘图
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 10000);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 100000);
     
     // glPointSize(50.0f);
     // x += inc;
@@ -251,7 +253,7 @@ int main(void)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-
+        cout<<glm::to_string(camera.Position)<<endl;
         currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;

@@ -7,13 +7,12 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <Plane.h>
 using namespace std;
 
 
 #define numVAOs 1
-#define numVBOs 2
-
-
+#define numVBOs 4
 #define MIN_LENGTH 0.1f
 // settings
 const unsigned int SCR_WIDTH = 1600;

@@ -1,6 +1,5 @@
-#pragma once
-
 #include "Camera.h"
+
 Camera::Camera(glm::vec3 position, glm::vec3 up) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Fov(FOV)
 {
     Position = position;

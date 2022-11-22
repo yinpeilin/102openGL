@@ -11,11 +11,13 @@ void processInput(GLFWwindow *window);
 
 
 // camera
-Camera camera(glm::vec3(0.0f,0.0f,420.0f),glm::vec3(0.0f,1.0f,0.0f));
+Camera camera(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
  
+// plane
+Plane testPlane(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(2000.0f,0.0f,0.0f),glm::vec3(1000.0f,1000.0f,0.0f));
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
@@ -23,6 +25,7 @@ GLuint myTexture;
 
 
 GLuint renderingProgram;
+GLuint terrainRenderingProgram;
 GLuint vao[numVAOs];
 GLuint vbo[numVBOs];
 
@@ -52,79 +55,31 @@ void setupVertices(void) {
         0.5f, 1.0f,   // 后侧面、左侧面
         0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,   1.0f, 1.0f, 0.0f, 0.0f,
         1.0f, 0.0f }; // 底面的两个三角形
-    glGenVertexArrays(1, vao); 
+    glGenVertexArrays(numVAOs, vao); 
     glBindVertexArray(vao[0]); 
     glGenBuffers(numVBOs, vbo);
+    // glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(pyrTexCoords), pyrTexCoords, GL_STATIC_DRAW);
+
+    
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(pyrTexCoords), pyrTexCoords, GL_STATIC_DRAW);
-}
-
-GLuint createShaderProgram()
-{
-    string vertShaderStr = readShaderSource("..\\shader\\vertShader.glsl");
-    string fragShaderStr = readShaderSource("..\\shader\\fragShader.glsl");
-    const char* vshaderSource = vertShaderStr.c_str();
-    const char* fshaderSource = fragShaderStr.c_str();
+    glBufferData(GL_ARRAY_BUFFER, testPlane.cpoints_len, testPlane.cpoints, GL_STATIC_DRAW);
     
-    // cout << vshaderSource<<endl;
-    // cout<<fshaderSource<<endl;
-
-    GLint vertCompiled;
-    GLint fragCompiled;
-    GLint linked;
-
-    GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
-    // cout<<"vShader: " <<vShader<<endl;
-    // cout<<"fShader: "<< fShader<<endl;
-    glShaderSource(vShader, 1, &vshaderSource, NULL);
-    glCompileShader(vShader);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, testPlane.cindices_len, testPlane.cindices, GL_STATIC_DRAW);
     
-    //捕获编译着色器错误
-    checkOpenGLError();
-    glGetShaderiv(vShader, GL_COMPILE_STATUS, &vertCompiled);
-    if(vertCompiled !=1)
-    {
-        cout << "vertex compilation failed" << endl;
-        printShaderLog(vShader);
-    }
-
-    
-    glShaderSource(fShader, 1, &fshaderSource, NULL);
-    glCompileShader(fShader);
-    checkOpenGLError();
-    glGetShaderiv(fShader, GL_COMPILE_STATUS, &fragCompiled);
-    if(fragCompiled !=1)
-    {
-        cout << "fragment compilation failed" << endl;
-        printShaderLog(fShader);
-    }
-
-
-    GLuint vfProgram = glCreateProgram();
-    glAttachShader(vfProgram, vShader);
-    glAttachShader(vfProgram, fShader);
-    glLinkProgram(vfProgram);
-    checkOpenGLError();
-    glGetProgramiv(vfProgram, GL_LINK_STATUS, &linked);
-    if(linked !=1)
-    {
-        cout<<"linking failed"<<endl;
-        printProgramLog(vfProgram);
-    }
-
-    // cout<<vfProgram<<endl;
-    return vfProgram;
 
 }
 
 
 void init(GLFWwindow* window)
 {
-    renderingProgram = createShaderProgram();
+    renderingProgram = createShaderProgram("..\\shader\\vertShader.glsl","..\\shader\\fragShader.glsl");
+    terrainRenderingProgram = createShaderProgram("..\\shader\\terrainVertShader.glsl",
+                                                "..\\shader\\terrainFragShader.glsl");
     // glGenVertexArrays(numVAOs, vao);
     // glBindVertexArray(vao[0]);
     cubeLocX = 0.0f; cubeLocY = -2.0f; cubeLocZ = 0.0f;
@@ -133,10 +88,11 @@ void init(GLFWwindow* window)
 
     glfwGetFramebufferSize(window, &width, &height); 
     aspect = (float)width / (float)height;
-    pMat = glm::perspective(glm::radians(camera.Fov), aspect, 0.1f, 10000.0f);     
+    pMat = glm::perspective(glm::radians(camera.Fov), aspect, 0.1f, 10000.0f);  
+    testPlane.show_all();   
     // 1.0472 radians = 60 degrees
 
-    myTexture = loadTexture("../resource/image.jpg");
+    // myTexture = loadTexture("../resource/image.jpg");
     
 }
 void display(GLFWwindow* window, GLdouble currentTime)
@@ -150,29 +106,72 @@ void display(GLFWwindow* window, GLdouble currentTime)
     glClear(GL_DEPTH_BUFFER_BIT);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(renderingProgram);
+    // glUseProgram(renderingProgram);
+
+    // // 获取MV矩阵和投影矩阵的统一变量
+    // mLoc = glGetUniformLocation(renderingProgram, "m_matrix"); 
+    // vLoc = glGetUniformLocation(renderingProgram, "v_matrix"); 
+    // projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
+    // // 构建透视矩阵
+    // // glfwGetFramebufferSize(window, &width, &height); 
+    // // aspect = (float)width / (float)height;
+
+    // // pMat = glm::perspective(glm::radians(60.0f), aspect, 0.1f, 1000.0f); // 1.0472 radians = 60 degrees
+
+
+    // //transform矩阵和旋转矩阵
+    // // glm::mat4 tMat = glm::translate(glm::mat4(1.0f), glm::vec3(sin(0.35f*currentTime)*2.0f,cos(0.52f*currentTime)*2.0f, sin(0.7f*currentTime)*2.0f)); 
+    // // glm::mat4 rMat = glm::rotate(glm::mat4(1.0f), 1.75f*(float)currentTime, glm::vec3(0.0f, 1.0f, 0.0f));
+    // // rMat = glm::rotate(rMat, 1.75f*(float)currentTime, glm::vec3(1.0f,0.0f, 0.0f));
+    // // rMat = glm::rotate(rMat, 1.75f*(float)currentTime, glm::vec3(0.0f,0.0f, 1.0f));
+
+    // //构建视图矩阵、模型矩阵和视图-模型矩阵
+    // vMat = camera.GetViewMatrix();
+    // // vMat = glm::translate(glm::mat4(1.0f), -camera.Position);
+    // mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubeLocX, cubeLocY, cubeLocZ));
+    // // mMat = tMat * rMat;
+    // // mvMat = vMat * mMat;
+
+    // // 将透视矩阵和MV矩阵复制给相应的统一变量
+    // glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(vMat));
+    // glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(mMat));
+    // glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
+    // // 将VBO关联给顶点着色器中相应的顶点属性 
+    // glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); 
+    // glEnableVertexAttribArray(0);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); 
+    // glEnableVertexAttribArray(1);
+
+    
+    // // glActiveTexture(GL_TEXTURE0);
+    // // glBindTexture(GL_TEXTURE_2D, myTexture);
+
+    // // 调整OpenGL设置，绘制模型 
+    // glEnable(GL_DEPTH_TEST); 
+    // glDepthFunc(GL_LEQUAL);
+    // // glDrawArrays(GL_TRIANGLES, 0, 36);
+    // //背面剔除
+    // // glFrontFace(GL_CW);             // 顶点的缠绕顺序为顺时针方向
+    // // glFrontFace(GL_CCW);            // 顶点缠绕顺序为逆时针方向
+    // //多实例化绘图
+    // glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 00000);
+    
+
+
+    glUseProgram(terrainRenderingProgram);
 
     // 获取MV矩阵和投影矩阵的统一变量
-    mLoc = glGetUniformLocation(renderingProgram, "m_matrix"); 
-    vLoc = glGetUniformLocation(renderingProgram, "v_matrix"); 
-    projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
-    // 构建透视矩阵
-    // glfwGetFramebufferSize(window, &width, &height); 
-    // aspect = (float)width / (float)height;
-
-    // pMat = glm::perspective(glm::radians(60.0f), aspect, 0.1f, 1000.0f); // 1.0472 radians = 60 degrees
-
-
-    //transform矩阵和旋转矩阵
-    // glm::mat4 tMat = glm::translate(glm::mat4(1.0f), glm::vec3(sin(0.35f*currentTime)*2.0f,cos(0.52f*currentTime)*2.0f, sin(0.7f*currentTime)*2.0f)); 
-    // glm::mat4 rMat = glm::rotate(glm::mat4(1.0f), 1.75f*(float)currentTime, glm::vec3(0.0f, 1.0f, 0.0f));
-    // rMat = glm::rotate(rMat, 1.75f*(float)currentTime, glm::vec3(1.0f,0.0f, 0.0f));
-    // rMat = glm::rotate(rMat, 1.75f*(float)currentTime, glm::vec3(0.0f,0.0f, 1.0f));
+    mLoc = glGetUniformLocation(terrainRenderingProgram, "m_matrix"); 
+    vLoc = glGetUniformLocation(terrainRenderingProgram, "v_matrix"); 
+    projLoc = glGetUniformLocation(terrainRenderingProgram, "proj_matrix");
 
     //构建视图矩阵、模型矩阵和视图-模型矩阵
     vMat = camera.GetViewMatrix();
     // vMat = glm::translate(glm::mat4(1.0f), -camera.Position);
-    mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubeLocX, cubeLocY, cubeLocZ));
+    mMat = glm::translate(glm::mat4(1.0f), testPlane.cposition);
     // mMat = tMat * rMat;
     // mvMat = vMat * mMat;
 
@@ -182,16 +181,13 @@ void display(GLFWwindow* window, GLdouble currentTime)
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
     // 将VBO关联给顶点着色器中相应的顶点属性 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0); 
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); 
-    glEnableVertexAttribArray(1);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0); 
+    // glEnableVertexAttribArray(1);
 
-    
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, myTexture);
 
     // 调整OpenGL设置，绘制模型 
     glEnable(GL_DEPTH_TEST); 
@@ -201,8 +197,8 @@ void display(GLFWwindow* window, GLdouble currentTime)
     // glFrontFace(GL_CW);             // 顶点的缠绕顺序为顺时针方向
     // glFrontFace(GL_CCW);            // 顶点缠绕顺序为逆时针方向
     //多实例化绘图
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 100000);
-    
+    // glDrawElementsInstanced(GL_TRIANGLES, testPlane.cindices_len, GL_UNSIGNED_INT, nullptr, 1);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, testPlane.cpoints_len,1);
     // glPointSize(50.0f);
     // x += inc;
     // if(x > 1.0f){ inc = -0.01f;}

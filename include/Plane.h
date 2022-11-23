@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h> // struct stat
+#include <stb_image.h>
 using namespace std;
 
 enum class vectorType{
@@ -26,6 +27,11 @@ public:
     vector<glm::vec2> ctex_coord;
     vector<GLuint> cindices;
     string filePath [3];
+    Plane(string fileDir = "..\\resource\\", string point_name = "points.bin", string texcoord_name = "texcoords.bin", string indice_name="indices.bin")
+    {
+                                                                                                        
+
+    }
     Plane(glm::vec3 position1,glm::vec3 position2, glm::vec3 positinCenter,GLfloat min_len)
     {
         cmin_len = min_len;
@@ -76,7 +82,9 @@ public:
         ofstream file;
         //打开文件 
         file.open(this->filePath[0], ios::out | ios::binary);
-        //先储存四个顶点
+        //先储存最小距离，方向和四个顶点
+        file.write((const char *)(&this->cmin_len), sizeof(GLfloat));
+        file.write((const char *)(&this->cdirection), 1*3*sizeof(GLfloat));
         file.write((const char *)(&this->cvectices[0]), 4*3*sizeof(GLfloat));
         //再存储所有顶点
         file.write((const char *)(&this->cpoints[0]), this->cpoints.size()*3*sizeof(GLfloat));

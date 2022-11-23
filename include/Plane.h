@@ -27,14 +27,56 @@ public:
     vector<glm::vec2> ctex_coord;
     vector<GLuint> cindices;
     string filePath [3];
-    Plane(string fileDir = "..\\resource\\", string point_name = "points.bin", string texcoord_name = "texcoords.bin", string indice_name="indices.bin")
+    Plane(glm::vec3 position,string fileDir = "..\\resource\\", string point_name = "points.bin", string texcoord_name = "texcoords.bin", string indice_name="indices.bin")
     {
-                                                                                                        
+        cposition = position;
+        filePath[0] = fileDir + point_name;
+        filePath[1] = fileDir + texcoord_name;
+        filePath[2] = fileDir + indice_name;
+        
+        ifstream file;
+
+        file.open(this->filePath[0], ios::in|ios::binary);
+        file.read((char *)(&this->cmin_len), sizeof(GLfloat));
+        file.read((char *)(&this->cdirection), 1*3*sizeof(GLfloat));
+        file.read((char *)(&this->cvectices[0]), 4*3*sizeof(GLfloat));
+        // 这是一个存储文件(夹)信息的结构体，其中有文件大小和创建时间、访问时间、修改时间等
+	    struct stat statbuf;
+	    // 提供文件名字符串，获得文件属性结构体
+	    stat(this->filePath[0].c_str(), &statbuf);
+	    // 获取文件大小
+	    size_t filesize = statbuf.st_size;
+        cout<<"the type is "<<0<<" and the filesize is "<<filesize<<endl;
+        cpoints.resize((filesize - 16*sizeof(GLfloat))/(3*sizeof(GLfloat)));
+        file.read((char *)(&this->cpoints[0]), this->cpoints.size()*3*sizeof(GLfloat));
+        file.close();   
+
+        stat(this->filePath[1].c_str(), &statbuf);
+	    // 获取文件大小
+	    filesize = statbuf.st_size;
+        cout<<" the type is "<<1<<" and the filesize is "<<filesize<<endl;
+        ctex_coord.resize(filesize/(2*sizeof(GLfloat)));
+        file.open(this->filePath[1], ios::in|ios::binary);
+        file.read((char *)(&this->ctex_coord[0]), this->ctex_coord.size()*2*sizeof(GLfloat));
+        file.close();  
+
+        stat(this->filePath[2].c_str(), &statbuf);
+	    // 获取文件大小
+	    filesize = statbuf.st_size;
+        cout<<"the type is "<<2<<" and the filesize is"<<filesize<<endl;
+        cindices.resize(filesize/(sizeof(GLuint)));
+        file.open(this->filePath[2], ios::in|ios::binary);
+        file.read((char *)(&this->cindices[0]), this->cindices.size()*sizeof(GLuint));
+        file.close();  
+
+        clength_num = (int)(glm::length(cvectices[1] - cvectices[0])/cmin_len);
+        cwidth_num = (int)(glm::length(cvectices[3] - cvectices[0])/cmin_len);                                                                                    
 
     }
     Plane(glm::vec3 position1,glm::vec3 position2, glm::vec3 positinCenter,GLfloat min_len)
     {
         cmin_len = min_len;
+        cposition = positinCenter;
         cvectices[0] = position1;
         cvectices[1] = position2;
         cvectices[2] = 2.0f*positinCenter - position1;
@@ -102,23 +144,57 @@ public:
     void read(vectorType type)
     {
         ifstream file;
+
         switch (type)
         {
         case vectorType::POINT:
             {
                 file.open(this->filePath[0], ios::in|ios::binary);
             // GLfloat temp ;
-                glm::vec3 temp[4];
-                file.read((char *)temp,4*3*4);
-                cout<<glm::to_string(this->cvectices[0])<<glm::to_string(this->cvectices[1])<<endl;
-                cout<<glm::to_string(temp[0])<<glm::to_string(temp[1])<<endl;
+                file.read((char *)(&this->cmin_len), sizeof(GLfloat));
+                file.read((char *)(&this->cdirection), 1*3*sizeof(GLfloat));
+                file.read((char *)(&this->cvectices[0]), 4*3*sizeof(GLfloat));
+                // 这是一个存储文件(夹)信息的结构体，其中有文件大小和创建时间、访问时间、修改时间等
+	            struct stat statbuf;
+	            // 提供文件名字符串，获得文件属性结构体
+	            stat(this->filePath[0].c_str(), &statbuf);
+	            // 获取文件大小
+	            size_t filesize = statbuf.st_size;
+                cout<<"the type is "<<(GLuint)type<<" and the filesize is"<<filesize<<endl;
+                cpoints.resize((filesize - 16*sizeof(GLfloat))/(3*sizeof(GLfloat)));
+                file.read((char *)(&this->cpoints[0]), this->cpoints.size()*3*sizeof(GLfloat));
+                file.close();
             }
             break;
         case vectorType::TEXCOORD:
-            cout<<2<<endl;
+            {
+                // 这是一个存储文件(夹)信息的结构体，其中有文件大小和创建时间、访问时间、修改时间等
+	            struct stat statbuf;
+	            // 提供文件名字符串，获得文件属性结构体
+	            stat(this->filePath[1].c_str(), &statbuf);
+	            // 获取文件大小
+	            size_t filesize = statbuf.st_size;
+                cout<<"the type is "<<(GLuint)type<<" and the filesize is"<<filesize<<endl;
+                ctex_coord.resize(filesize/(2*sizeof(GLfloat)));
+                file.open(this->filePath[1], ios::in|ios::binary);
+                file.read((char *)(&this->ctex_coord[0]), this->ctex_coord.size()*2*sizeof(GLfloat));
+                file.close();
+            }
             break;
         case vectorType::INDICE:
-            cout<<3<<endl;
+            {
+                // 这是一个存储文件(夹)信息的结构体，其中有文件大小和创建时间、访问时间、修改时间等
+	            struct stat statbuf;
+	            // 提供文件名字符串，获得文件属性结构体
+	            stat(this->filePath[2].c_str(), &statbuf);
+	            // 获取文件大小
+	            size_t filesize = statbuf.st_size;
+                cout<<"the type is "<<(GLuint)type<<" and the filesize is"<<filesize<<endl;
+                cindices.resize(filesize/(sizeof(GLuint)));
+                file.open(this->filePath[2], ios::in|ios::binary);
+                file.read((char *)(&this->cindices[0]), this->cindices.size()*sizeof(GLuint));
+                file.close();
+            }
             break;
         default:
             cout<<"get a error of type"<<endl;
@@ -128,26 +204,90 @@ public:
 
 };
 
-class terrain:public Plane
+class Terrain:public Plane
 {
+    public:
     GLfloat cmax_height;
-    GLfloat cmin_height;
-    terrain(glm::vec3 position1,glm::vec3 position2, glm::vec3 positinCenter,GLfloat min_len,GLfloat max_height, GLfloat min_height)
+    Terrain(glm::vec3 position1,glm::vec3 position2, glm::vec3 positinCenter,GLfloat max_height, GLfloat min_len)
     :Plane(position1,position2,positinCenter,min_len) 
     {
         cmax_height = max_height;
-        cmin_height = min_height;
+        // cmin_height = min_height;
 
     }
+    Terrain(glm::vec3 position,string fileDir = "..\\resource\\", string point_name = "points.bin", string texcoord_name = "texcoords.bin", string indice_name="indices.bin"):Plane(position,"..\\resource\\", "points.bin", "texcoords.bin", "indices.bin")
+    {
 
-    void getHeightRandom(){
+    }
+    void setMax_height(GLfloat max_height)
+    {
+        cmax_height = max_height;
+    }
+    void getHeightChangeFromPicture(string fileDir = "..\\resource\\",string img_name = "image.jpg")
+    {
         
+        int width, height, nrChannels;
+        string img_path = fileDir+img_name;
+        const char * new_img_path = img_path.c_str();
+        unsigned char *data = stbi_load(new_img_path, &width, &height, &nrChannels, 0);
+        unsigned bytePerPixel = nrChannels;
+        int temp = 0;
+
+        for(int i=0;i<cwidth_num;i++)
+        {
+	        for(int j=0;j<clength_num;j++)
+	        {
+                // cout<<this->ctex_coord[i*clength_num+j][0] *height +(int)this->ctex_coord[i*clength_num+j][1]<<endl;
+                // unsigned char* pixelOffset = data + ((int)this->ctex_coord[i*clength_num+j][0] *height +(int)this->ctex_coord[i*clength_num+j][1] *width) * bytePerPixel;
+                unsigned char* pixelOffset = data + (int)(this->ctex_coord[i*clength_num+j][0] *height +this->ctex_coord[i*clength_num+j][1] *width*height) * bytePerPixel;
+                // cout<<(GLuint64)pixelOffset<<endl;
+                GLuint r = (GLuint)pixelOffset[0];
+                // cpoints[i*clength_num+j] = ((cmax_height)*(r)*cdirection)/200.0f;
+                // cout<<r<<endl;
+                // if(r!=55)
+                // {
+                //     cout<<r<<endl;
+                // }
+                // cout<<glm::to_string((cmax_height)*(r-55)*cdirection)<<endl;
+                // cout<<r<<endl;
+                cpoints[i*clength_num+j][0] += ((cmax_height)*(r-55)*cdirection[0])/200.0f;
+                cpoints[i*clength_num+j][1] += ((cmax_height)*(r-55)*cdirection[1])/200.0f;
+                cpoints[i*clength_num+j][2] += ((cmax_height)*(r-55)*cdirection[2])/200.0f;
+                // cpoints[i*clength_num+j][1] = (GLfloat)(rand()%1000); 
+                // cout<<glm::to_string(cpoints[i*clength_num+j]);
+                // unsigned char g = pixelOffset[1];
+                // unsigned char b = pixelOffset[2];
+                // unsigned char a = nrChannels >= 4 ? pixelOffset[3] : 0xff;
+                // if((int)r >=100 && (int)g>=100&&(int)b >=100)
+                // {
+                //     cout<<(int)r<<" "<<(int)g<<" "<<(int)b<<" "<<(int)a<<endl;
+                // }
+                
+            }
+        }
+
+        // for(int y=0;y<height;y++)
+        // {
+	    //     for(int x=0;x<width;x++)
+	    //     {
+		
+        //         unsigned char* pixelOffset = data + (x + y * width) * bytePerPixel;
+        //         GLuint r = (GLuint)pixelOffset[0];
+        //         cpoints[x+y*] += ((cmax_height)*(r-55)*cdirection)/200.0;
+        //         while()
+        //         // unsigned char g = pixelOffset[1];
+        //         // unsigned char b = pixelOffset[2];
+        //         // unsigned char a = nrChannels >= 4 ? pixelOffset[3] : 0xff;
+        //         // if((int)r >=100 && (int)g>=100&&(int)b >=100)
+        //         // {
+        //         //     cout<<(int)r<<" "<<(int)g<<" "<<(int)b<<" "<<(int)a<<endl;
+        //         // }
+                
+        //     }
+        // }
+        stbi_image_free(data);
     }
-    void getHeightPicture(){
-
-    }
-
-
 
 
 };
+

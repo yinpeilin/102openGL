@@ -15,7 +15,9 @@ float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
  
 // plane
-Plane testPlane(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(40000.0f,0.0f,0.0f),glm::vec3(20000.0f,0.0f,-20000.0f),10.0f);
+// Plane testPlane(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(40000.0f,0.0f,0.0f),glm::vec3(20000.0f,0.0f,-20000.0f),10.0f);
+// Plane testPlane("..\\resource\\");
+Terrain testTerrain(glm::vec3(20000.0f,0.0f,-20000.0f),"..\\resource\\");
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
@@ -63,10 +65,10 @@ void setupVertices(void) {
 
     
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, testPlane.cpoints.size()*3*4, &(testPlane.cpoints[0]), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, testTerrain.cpoints.size()*3*4, &(testTerrain.cpoints[0]), GL_STATIC_DRAW);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,testPlane.cindices.size()*4, &(testPlane.cindices[0]), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,testTerrain.cindices.size()*4, &(testTerrain.cindices[0]), GL_STATIC_DRAW);
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
     // glBufferData(GL_ELEMENT_ARRAY_BUFFER, testPlane.cindices_len, testPlane.cindices, GL_STATIC_DRAW);
     
@@ -82,6 +84,13 @@ void setupVertices(void) {
 
 void init(GLFWwindow* window)
 {
+    // testPlane.setFilePath();
+    // testPlane.write_all();
+    // testPlane.read(vectorType::POINT);
+    testTerrain.setMax_height(100.0f);
+    testTerrain.getHeightChangeFromPicture("..\\resource\\","terrain.jpg");
+    
+
     renderingProgram = createShaderProgram("..\\shader\\vertShader.glsl","..\\shader\\fragShader.glsl");
     terrainRenderingProgram = createShaderProgram("..\\shader\\terrainVertShader.glsl",
                                                 "..\\shader\\terrainFragShader.glsl");
@@ -175,7 +184,7 @@ void display(GLFWwindow* window, GLdouble currentTime)
     //构建视图矩阵、模型矩阵和视图-模型矩阵
     vMat = camera.GetViewMatrix();
     // vMat = glm::translate(glm::mat4(1.0f), -camera.Position);
-    mMat = glm::translate(glm::mat4(1.0f), testPlane.cposition);
+    mMat = glm::translate(glm::mat4(1.0f), testTerrain.cposition);
     // mMat = tMat * rMat;
     // mvMat = vMat * mMat;
 
@@ -202,8 +211,8 @@ void display(GLFWwindow* window, GLdouble currentTime)
     // glFrontFace(GL_CW);             // 顶点的缠绕顺序为顺时针方向
     // glFrontFace(GL_CCW);            // 顶点缠绕顺序为逆时针方向
     //多实例化绘图
-    // glDrawElementsInstanced(GL_LINE_STRIP, testPlane.cindices.size(), GL_UNSIGNED_INT, nullptr, 1);
-     glDrawElementsInstanced(GL_TRIANGLES, testPlane.cindices.size(), GL_UNSIGNED_INT, nullptr, 1);
+    glDrawElementsInstanced(GL_LINE_STRIP, testTerrain.cindices.size(), GL_UNSIGNED_INT, nullptr, 1);
+    //  glDrawElementsInstanced(GL_TRIANGLES, testTerrain.cindices.size(), GL_UNSIGNED_INT, nullptr, 1);
     // glDrawArraysInstanced(GL_TRIANGLES, 0, testPlane.cpoints_len,1);
     // glPointSize(50.0f);
     // x += inc;
@@ -217,10 +226,7 @@ void display(GLFWwindow* window, GLdouble currentTime)
 }
 int main(void)
 {
-    testPlane.setFilePath();
-    testPlane.write_all();
-    testPlane.read(vectorType::POINT);
-
+    
 
     GLFWwindow *window;
 

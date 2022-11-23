@@ -1,4 +1,5 @@
 #include "GL_Header.h"
+
 float cubeLocX, cubeLocY, cubeLocZ;
 
 void window_reshape_callback(GLFWwindow* window, int newWidth, int newHeight);
@@ -8,13 +9,13 @@ void processInput(GLFWwindow *window);
 
 
 // camera
-Camera camera(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
+Camera camera(glm::vec3(20000.0f,100.0f,-20000.0f),glm::vec3(0.0f,1.0f,0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
  
 // plane
-Plane testPlane(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(2000.0f,0.0f,0.0f),glm::vec3(1000.0f,1000.0f,0.0f));
+Plane testPlane(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(40000.0f,0.0f,0.0f),glm::vec3(20000.0f,0.0f,-20000.0f),10.0f);
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
@@ -92,7 +93,7 @@ void init(GLFWwindow* window)
 
     glfwGetFramebufferSize(window, &width, &height); 
     aspect = (float)width / (float)height;
-    pMat = glm::perspective(glm::radians(camera.Fov), aspect, 0.1f, 10000.0f);  
+    pMat = glm::perspective(glm::radians(camera.Fov), aspect, 0.1f, 20000.0f);  
     // 1.0472 radians = 60 degrees
 
     myTexture = loadTexture("../resource/image.jpg");
@@ -201,7 +202,8 @@ void display(GLFWwindow* window, GLdouble currentTime)
     // glFrontFace(GL_CW);             // 顶点的缠绕顺序为顺时针方向
     // glFrontFace(GL_CCW);            // 顶点缠绕顺序为逆时针方向
     //多实例化绘图
-    glDrawElementsInstanced(GL_LINE_STRIP, testPlane.cindices.size(), GL_UNSIGNED_INT, nullptr, 1);
+    // glDrawElementsInstanced(GL_LINE_STRIP, testPlane.cindices.size(), GL_UNSIGNED_INT, nullptr, 1);
+     glDrawElementsInstanced(GL_TRIANGLES, testPlane.cindices.size(), GL_UNSIGNED_INT, nullptr, 1);
     // glDrawArraysInstanced(GL_TRIANGLES, 0, testPlane.cpoints_len,1);
     // glPointSize(50.0f);
     // x += inc;
@@ -215,6 +217,10 @@ void display(GLFWwindow* window, GLdouble currentTime)
 }
 int main(void)
 {
+    testPlane.setFilePath();
+    testPlane.write_all();
+    testPlane.read(vectorType::POINT);
+
 
     GLFWwindow *window;
 

@@ -14,8 +14,9 @@ using namespace std;
 
 
 #define numVAOs 2
-#define numVBOs 4
+#define numVBOs 28
 #define MIN_LENGTH 0.1f
+#define MAX_TERRAIN 25
 // settings
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 1200;

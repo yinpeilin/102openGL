@@ -27,9 +27,16 @@ public:
     vector<glm::vec2> ctex_coord;
     vector<GLuint> cindices;
     string filePath [3];
-    Plane(glm::vec3 position,string fileDir = "..\\resource\\", string point_name = "points.bin", string texcoord_name = "texcoords.bin", string indice_name="indices.bin")
+    Plane()
     {
-        cposition = position;
+
+    }
+    void setPosition(glm::vec3 position)
+    {
+       this->cposition = position;
+    }
+    Plane(string fileDir, string point_name = "points.bin", string texcoord_name = "texcoords.bin", string indice_name="indices.bin")
+    {
         filePath[0] = fileDir + point_name;
         filePath[1] = fileDir + texcoord_name;
         filePath[2] = fileDir + indice_name;
@@ -76,12 +83,12 @@ public:
     Plane(glm::vec3 position1,glm::vec3 position2, glm::vec3 positinCenter,GLfloat min_len)
     {
         cmin_len = min_len;
-        cposition = positinCenter;
         cvectices[0] = position1;
         cvectices[1] = position2;
         cvectices[2] = 2.0f*positinCenter - position1;
         cvectices[3] = 2.0f*positinCenter - position2;
         cdirection = glm::normalize(glm::cross(cvectices[1] - cvectices[0], cvectices[2] - cvectices[1]));
+        if(cdirection[1]<0.0f){ cdirection = -cdirection;}
         clength_num = (int)(glm::length(cvectices[1] - cvectices[0])/cmin_len);
         cwidth_num = (int)(glm::length(cvectices[3] - cvectices[0])/cmin_len);
         glm::vec3 min_length_vector = glm::normalize(cvectices[1] - cvectices[0])*cmin_len;
@@ -102,9 +109,7 @@ public:
                     cindices.push_back((GLint)(i*clength_num+j+1));
                     cindices.push_back((GLint)((i+1)*clength_num+j));
                     cindices.push_back((GLint)((i+1)*clength_num+j+1));
-                
                 }
-                
             }
         }
         
@@ -164,6 +169,8 @@ public:
                 cpoints.resize((filesize - 16*sizeof(GLfloat))/(3*sizeof(GLfloat)));
                 file.read((char *)(&this->cpoints[0]), this->cpoints.size()*3*sizeof(GLfloat));
                 file.close();
+                this->clength_num = (int)(glm::length(cvectices[1] - cvectices[0])/cmin_len);
+                this->cwidth_num = (int)(glm::length(cvectices[3] - cvectices[0])/cmin_len);          
             }
             break;
         case vectorType::TEXCOORD:
@@ -208,14 +215,16 @@ class Terrain:public Plane
 {
     public:
     GLfloat cmax_height;
-    Terrain(glm::vec3 position1,glm::vec3 position2, glm::vec3 positinCenter,GLfloat max_height, GLfloat min_len)
-    :Plane(position1,position2,positinCenter,min_len) 
+    Terrain()
     {
-        cmax_height = max_height;
-        // cmin_height = min_height;
 
     }
-    Terrain(glm::vec3 position,string fileDir = "..\\resource\\", string point_name = "points.bin", string texcoord_name = "texcoords.bin", string indice_name="indices.bin"):Plane(position,"..\\resource\\", "points.bin", "texcoords.bin", "indices.bin")
+    Terrain(glm::vec3 position1,glm::vec3 position2, glm::vec3 positinCenter,GLfloat min_len)
+    :Plane(position1,position2,positinCenter,min_len) 
+    {
+
+    }
+    Terrain(string fileDir, string point_name = "points.bin", string texcoord_name = "texcoords.bin", string indice_name="indices.bin"):Plane(fileDir, point_name , texcoord_name, indice_name)
     {
 
     }
@@ -232,62 +241,32 @@ class Terrain:public Plane
         unsigned char *data = stbi_load(new_img_path, &width, &height, &nrChannels, 0);
         unsigned bytePerPixel = nrChannels;
         int temp = 0;
-
+        // cout<<glm::to_string(cdirection)<<endl;
+        // cout<<cmax_height<<endl;
         for(int i=0;i<cwidth_num;i++)
         {
 	        for(int j=0;j<clength_num;j++)
 	        {
                 // cout<<this->ctex_coord[i*clength_num+j][0] *height +(int)this->ctex_coord[i*clength_num+j][1]<<endl;
                 // unsigned char* pixelOffset = data + ((int)this->ctex_coord[i*clength_num+j][0] *height +(int)this->ctex_coord[i*clength_num+j][1] *width) * bytePerPixel;
-                unsigned char* pixelOffset = data + (int)(this->ctex_coord[i*clength_num+j][0] *height +this->ctex_coord[i*clength_num+j][1] *width*height) * bytePerPixel;
+                unsigned char* pixelOffset = data + (int)(this->ctex_coord[i*clength_num+j][0] *width*height +this->ctex_coord[i*clength_num+j][1]*height) * bytePerPixel;
                 // cout<<(GLuint64)pixelOffset<<endl;
-                GLuint r = (GLuint)pixelOffset[0];
+                GLint r = (GLuint)pixelOffset[0];
                 // cpoints[i*clength_num+j] = ((cmax_height)*(r)*cdirection)/200.0f;
-                // cout<<r<<endl;
-                // if(r!=55)
-                // {
-                //     cout<<r<<endl;
-                // }
-                // cout<<glm::to_string((cmax_height)*(r-55)*cdirection)<<endl;
-                // cout<<r<<endl;
-                cpoints[i*clength_num+j][0] += ((cmax_height)*(r-55)*cdirection[0])/200.0f;
-                cpoints[i*clength_num+j][1] += ((cmax_height)*(r-55)*cdirection[1])/200.0f;
-                cpoints[i*clength_num+j][2] += ((cmax_height)*(r-55)*cdirection[2])/200.0f;
-                // cpoints[i*clength_num+j][1] = (GLfloat)(rand()%1000); 
+                
+                cpoints[i*clength_num+j] += ((GLfloat)((GLfloat)(cmax_height)*(r-55)/200.0f)*cdirection);
+                // cpoints[i*clength_num+j][0] += ((cmax_height)*(r-55)*cdirection[0])/200.0f;
+                // cpoints[i*clength_num+j][1] += ((cmax_height)*(r-55)*cdirection[1])/200.0f;
+                // cpoints[i*clength_num+j][2] += ((cmax_height)*(r-55)*cdirection[2])/200.0f;
                 // cout<<glm::to_string(cpoints[i*clength_num+j]);
                 // unsigned char g = pixelOffset[1];
                 // unsigned char b = pixelOffset[2];
                 // unsigned char a = nrChannels >= 4 ? pixelOffset[3] : 0xff;
-                // if((int)r >=100 && (int)g>=100&&(int)b >=100)
-                // {
-                //     cout<<(int)r<<" "<<(int)g<<" "<<(int)b<<" "<<(int)a<<endl;
-                // }
                 
             }
         }
-
-        // for(int y=0;y<height;y++)
-        // {
-	    //     for(int x=0;x<width;x++)
-	    //     {
-		
-        //         unsigned char* pixelOffset = data + (x + y * width) * bytePerPixel;
-        //         GLuint r = (GLuint)pixelOffset[0];
-        //         cpoints[x+y*] += ((cmax_height)*(r-55)*cdirection)/200.0;
-        //         while()
-        //         // unsigned char g = pixelOffset[1];
-        //         // unsigned char b = pixelOffset[2];
-        //         // unsigned char a = nrChannels >= 4 ? pixelOffset[3] : 0xff;
-        //         // if((int)r >=100 && (int)g>=100&&(int)b >=100)
-        //         // {
-        //         //     cout<<(int)r<<" "<<(int)g<<" "<<(int)b<<" "<<(int)a<<endl;
-        //         // }
-                
-        //     }
-        // }
         stbi_image_free(data);
     }
-
 
 };
 

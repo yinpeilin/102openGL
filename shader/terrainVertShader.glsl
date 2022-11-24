@@ -11,7 +11,7 @@ uniform mat4 proj_matrix;
 // uniform float tf;                 // 用于动画和放置立方体的时间因子
 // uniform mat4 proj_matrix;
 
-// out vec4 varyingColor;
+out vec4 varyingColor;
 
 mat4 buildRotateX(float rad);     // 矩阵变换工具函数的声明
 mat4 buildRotateY(float rad);     // GLSL 要求函数先声明后调用
@@ -23,6 +23,7 @@ void main(void)
     // 构建模型矩阵，然后是模型-视图矩阵
     mat4 mv_matrix = v_matrix * m_matrix;
     gl_Position = proj_matrix * mv_matrix * vec4(position,1.0);
+    varyingColor =  vec4(position.y/10,position.y/10,position.y/10,1.0);
 
     
 }

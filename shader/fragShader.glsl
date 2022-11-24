@@ -11,5 +11,6 @@ void main(void)
 { 
     // color = texture(samp, tc);
     color = texture(samp, tc);
+    
     // color = varyingColor;
 }
